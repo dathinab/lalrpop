@@ -238,6 +238,22 @@ pub enum WhereClause<T> {
 }
 
 impl<T> WhereClause<T> {
+    pub fn flatten(&self) -> Vec<WhereClause<T>>
+    where T: Clone {
+        match *self {
+            WhereClause::Lifetime { .. } => vec![self.clone()],
+            WhereClause::Type {
+                ref forall,
+                ref ty,
+                ref bounds,
+            } => bounds.iter().map(|bound| WhereClause::Type {
+                forall: forall.clone(),
+                ty: ty.clone(),
+                bounds: vec![bound.clone()]
+            }).collect(),
+        }
+    }
+
     pub fn map<F, U>(&self, mut f: F) -> WhereClause<U>
     where
         F: FnMut(&T) -> U,

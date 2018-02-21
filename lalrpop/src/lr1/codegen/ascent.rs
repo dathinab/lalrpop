@@ -143,13 +143,18 @@ impl<'ascent, 'grammar, W: Write>
             .collect();
 
         let mut referenced_where_clauses = Set::new();
-        for wc in &grammar.where_clauses {
+        println!("where_clauses = {:#?}", grammar.where_clauses);
+        for wc in grammar.where_clauses.iter().flat_map(|wc| wc.flatten()) {
+            println!("retain(wc={:?})", wc);
             wc.map(|ty| {
                 if ty.referenced()
                     .iter()
-                    .any(|p| nonterminal_type_params.contains(p))
+                    .all(|p| nonterminal_type_params.contains(p))
                 {
+                    println!("retain(wc={:?}, ty={:?})", wc, ty);
                     referenced_where_clauses.insert(wc.clone());
+                } else {
+                    println!("not-retain(wc={:?}, ty={:?})", wc, ty);
                 }
             });
         }
